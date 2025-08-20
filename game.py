@@ -1,6 +1,13 @@
 import math, random, pygame
 import settings as cfg 
-from settings import set_screen_metrics, DT, DEFAULT_TIME_SCALE, ACTION_TIME_SCALE, WHITE
+from settings import (
+    set_screen_metrics,
+    DT,
+    DEFAULT_TIME_SCALE,
+    ACTION_TIME_SCALE,
+    WHITE,
+    SHOT_COOLDOWN,
+)
 from assets import load_img, load_spritesheet, fade_surface, load_grid_spritesheet
 from entities import Planet, LaunchSite, Rocket, Explosion
 import assets
@@ -12,6 +19,8 @@ class Player:
         self.alive = True
         self.shots = 100
         self.site = None
+        # Time remaining before this player can fire again
+        self.cooldown = 0.0
 
 class Game:
     def __init__(self):
@@ -150,12 +159,15 @@ class Game:
         self.ensure_player_site(player)
         if not player.site:
             return
+        if player.cooldown > 0:
+            return
         if player.shots < 1:
             empty_sound = assets.get_sound("empty")
             empty_sound.play()
             return
         player.shots -= 1
         self.spawn_rocket(player, player.site, 0.0, player.site.planned_speed)
+        player.cooldown = SHOT_COOLDOWN
 
     def spawn_rocket(self, player, site, angle_offset, speed):
         (x,y), tower_ang = site.get_world_pos()
@@ -169,6 +181,11 @@ class Game:
         self.time_scale = ACTION_TIME_SCALE if any(r.alive for r in self.rockets) else DEFAULT_TIME_SCALE
         dt = DT * self.time_scale
         self.t_sim += dt
+
+        # update player shot cooldown timers
+        for pl in self.players:
+            if pl.cooldown > 0:
+                pl.cooldown = max(0.0, pl.cooldown - dt)
 
         # animate stars
         self.sunone_index = (self.sunone_index + 1) % len(self.sunone_frames)
@@ -270,6 +287,25 @@ class Game:
 
         pygame.draw.rect(self.screen,(255,10,10,255), boxLeft)
         pygame.draw.rect(self.screen,(10,10,255,255), boxRight)
+
+        # Cooldown bars above the score panels
+        barH = 5
+        red_prog = (SHOT_COOLDOWN - self.players[1].cooldown) / SHOT_COOLDOWN
+        blue_prog = (SHOT_COOLDOWN - self.players[0].cooldown) / SHOT_COOLDOWN
+        # background bars
+        pygame.draw.rect(self.screen, (40,40,40), (boxLeft[0], boxLeft[1]-barH-2, panelW, barH))
+        pygame.draw.rect(self.screen, (40,40,40), (boxRight[0], boxRight[1]-barH-2, panelW, barH))
+        # progress bars
+        pygame.draw.rect(
+            self.screen,
+            self.players[1].color,
+            (boxLeft[0], boxLeft[1]-barH-2, panelW * red_prog, barH),
+        )
+        pygame.draw.rect(
+            self.screen,
+            self.players[0].color,
+            (boxRight[0], boxRight[1]-barH-2, panelW * blue_prog, barH),
+        )
 
         # Update scores
         blueScore = sum(p.health for p in self.planets if p.owner == "Blue")

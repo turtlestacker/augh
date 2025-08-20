@@ -37,3 +37,6 @@ def set_screen_metrics(w: int, h: int):
 # shots per planet (unused with player-based shots)
 SHOTS_PER_PLANET = 100
 
+# Delay required between consecutive shots (seconds)
+SHOT_COOLDOWN = 0.5
+
