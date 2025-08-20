@@ -185,7 +185,9 @@ class Game:
         # auto-select a site owned by next player
         for p in self.planets:
             for s in p.sites:
-                if s.owner == self.current_player():
+                # s.owner is stored as a string ("Blue"/"Red"),
+                # so compare against the current player's name
+                if s.owner == self.current_player().name:
                     self.selected_site = s
                     self.update_preview()
                     return
@@ -522,7 +524,8 @@ class Game:
         if not self.selected_site:
             for p in self.planets:
                 for s in p.sites:
-                    if s.owner == self.current_player():
+                    # s.owner is a string identifier; match against player name
+                    if s.owner == self.current_player().name:
                         self.selected_site = s
                         self.update_preview()
                         break
