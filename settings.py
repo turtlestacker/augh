@@ -34,6 +34,6 @@ def set_screen_metrics(w: int, h: int):
     WIDTH, HEIGHT = w, h
     CENTER = (WIDTH // 2, HEIGHT // 2)
 
-#shots per planet
-SHOTS_PER_PLANET = 10
+# shots per planet (unused with player-based shots)
+SHOTS_PER_PLANET = 100
 

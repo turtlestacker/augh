@@ -51,10 +51,10 @@ class Planet:
         self.spin_period = spin_period if spin_period else orbit_period * 0.5
         self.owner = owner
         self.sites = []
-        # Health
-        self.max_health = 100
+        # Health (30 hits to destroy)
+        self.max_health = 30
         self.health = self.max_health
-        # No Shots
+        # Shots per planet (unused when tracking per-player shots)
         self.shots = SHOTS_PER_PLANET
         for i in range(num_sites):
             site_angle = (i / num_sites) * math.tau
@@ -176,7 +176,7 @@ class Rocket:
         for p in planets:
             px, py = p.pos
             if (self.pos[0]-px)**2 + (self.pos[1]-py)**2 <= (p.radius_px)**2:
-                p.take_damage(34)
+                p.take_damage(1)
                 self.alive = False
                 break
 
