@@ -134,15 +134,17 @@ class Game:
             planets.append(p)
         return planets
 
-    def plan_adjust(self, player, dx_angle=0.0):
-        from settings import ANGLE_LIMIT_DEG
+    def next_site(self, player):
         self.ensure_player_site(player)
-        if not player.site:
+        sites = [s for p in self.planets for s in p.sites if s.owner == player.name]
+        if not sites:
+            player.site = None
             return
-        s = player.site
-        s.planned_angle_offset += dx_angle
-        limit = math.radians(ANGLE_LIMIT_DEG)
-        s.planned_angle_offset = max(-limit, min(limit, s.planned_angle_offset))
+        if player.site in sites:
+            idx = sites.index(player.site)
+            player.site = sites[(idx + 1) % len(sites)]
+        else:
+            player.site = sites[0]
 
     def fire(self, player):
         self.ensure_player_site(player)
@@ -153,7 +155,7 @@ class Game:
             empty_sound.play()
             return
         player.shots -= 1
-        self.spawn_rocket(player, player.site, player.site.planned_angle_offset, player.site.planned_speed)
+        self.spawn_rocket(player, player.site, 0.0, player.site.planned_speed)
 
     def spawn_rocket(self, player, site, angle_offset, speed):
         (x,y), tower_ang = site.get_world_pos()
@@ -287,7 +289,7 @@ class Game:
 
         txt = (
             f"Blue shots: {self.players[0].shots} | Red shots: {self.players[1].shots} | "
-            "Controls - Blue: A/D angle, S fire | Red: ;/' angle, # fire"
+            "Controls - Blue: S change site, D fire | Red: ' change site, # fire"
         )
         self.screen.blit(self.font.render(txt, True, WHITE), (12,10))
 
@@ -338,16 +340,12 @@ class Game:
             if event.type == pygame.QUIT:
                 self.running = False
             elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_a:
-                    self.plan_adjust(self.players[0], dx_angle=-math.radians(2))
+                if event.key == pygame.K_s:
+                    self.next_site(self.players[0])
                 elif event.key == pygame.K_d:
-                    self.plan_adjust(self.players[0], dx_angle= math.radians(2))
-                elif event.key == pygame.K_s:
                     self.fire(self.players[0])
-                elif event.key == pygame.K_SEMICOLON:
-                    self.plan_adjust(self.players[1], dx_angle=-math.radians(2))
                 elif event.key == pygame.K_QUOTE:
-                    self.plan_adjust(self.players[1], dx_angle= math.radians(2))
+                    self.next_site(self.players[1])
                 elif event.key == pygame.K_HASH:
                     self.fire(self.players[1])
                 elif event.key == pygame.K_ESCAPE:

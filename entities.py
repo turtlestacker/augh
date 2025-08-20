@@ -1,6 +1,6 @@
 import math, random, pygame
 import settings as cfg
-from settings import (DT, PREVIEW_DT_SCALE, G, STAR_MASS, ANGLE_LIMIT_DEG, MIN_SPEED, MAX_SPEED, YELLOW, GREEN, RED, SHOTS_PER_PLANET)
+from settings import (DT, PREVIEW_DT_SCALE, G, STAR_MASS, MIN_SPEED, MAX_SPEED, YELLOW, GREEN, RED, SHOTS_PER_PLANET)
 
 from assets import load_img
 
@@ -122,13 +122,10 @@ class LaunchSite:
             pygame.draw.circle(surf, YELLOW, (int(x), int(y)), 10, 2)
             r = 24
             base = ang - math.pi/2
-            a1 = base - math.radians(ANGLE_LIMIT_DEG) + self.planned_angle_offset
-            a2 = base + math.radians(ANGLE_LIMIT_DEG) + self.planned_angle_offset
-            for a in (a1, a2):
-                ex = x + math.cos(a) * r
-                ey = y + math.sin(a) * r
-                pygame.draw.line(surf, YELLOW, (x,y), (ex,ey), 1)
-            pygame.draw.circle(surf, (255,255,255), (int(x),int(y)), r, 1)
+            ex = x + math.cos(base) * r
+            ey = y + math.sin(base) * r
+            pygame.draw.line(surf, YELLOW, (x, y), (ex, ey), 1)
+            pygame.draw.circle(surf, (255, 255, 255), (int(x), int(y)), r, 1)
 
 class Rocket:
     def __init__(self, owner, pos, vel):
